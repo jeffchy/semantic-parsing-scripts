@@ -1,0 +1,8 @@
+/training/eds
+/__pycache__
+*.json
+*.txt
+*.zip
+*.mrp
+*.pkl
+*.conllu
