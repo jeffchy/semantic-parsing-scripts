@@ -6,3 +6,4 @@
 *.mrp
 *.pkl
 *.conllu
+*.py[cod]
