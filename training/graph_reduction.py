@@ -466,7 +466,8 @@ def single_align(node,nodes,edges,wsj_val):
 	node['label']='nonnode'
 	nodes[node['id']]=node
 
-def single_implicit_reduction(sentence,wsj,count={}):
+def single_implicit_reduction(sentence,wsj,stats_single=collections.Counter()):
+
 	# target: reduce all explicit target nodes' implicit parents with single child into the explicit node for special properties
 	nodes=sentence['nodes']
 	anchor_dict={}
@@ -509,40 +510,16 @@ def single_implicit_reduction(sentence,wsj,count={}):
 				#if node and target node have the same anchor, we set the node to be an attribute of target node, other wise we set is as an edge bettween target node and children of node
 				if (anchor_equal and len(node['children'])==1 and node['children'][0]==target_node['id'] and len(node['parents'])==0 and node['id'] not in sentence['tops']):
 					set_edge_label=False
+					temp = edges[(node['id'], target_node['id'])][0]
+					stats_single[(node['label'], temp)] += 1
+
 					newnode = combine_nodes([target_node, node], nodes, edges, set_edge_label=set_edge_label)
 
-				# elif len(node['children'])==1:
-				# 	if nodes[node['children'][0]]['anchors'][0]['from']>anchor and nodes[node['children'][0]]['anchors'][0]['to']<anchor_end:
-				# 		set_edge_label=False
-				# 		#pdb.set_trace()
-				# 	else:
-				# 		set_edge_label=True
-				# 		if (target_node['id'],nodes[node['children'][0]]['id']) in edges:
-				# 			set_edge_label=False
-				# else:
-				# 	set_edge_label=True
 
-				# newnode=combine_nodes([target_node,node],nodes,edges,set_edge_label=set_edge_label)
-				# if len(node['children'])>0:
-				# 	if node['children'][0]==target_node['id'] and not anchor_equal:
-				# 		count['total']+=1
-				# 		if anchor_end in anchor_dict_end:
-				# 			if (target_node['id'],anchor_dict_end[anchor_end][0]) in edges:
-				# 				count['count']+=1
-				# 			add_extra_edge(target_node,nodes[anchor_dict_end[anchor_end][0]],node['label'],edges)
-				# 		else:
-				# 			# pdb.set_trace()
-				# 			wsj_node=wsj_val[wsj_end_dict[anchor_end]]
-				# 			newnode=create_new_node('nonnode',nodes,wsj_node)
-				# 			add_extra_edge(target_node,newnode,node['label'],edges)
-				# 			to_add.append(newnode)
-				# for child in node['children']:
-				# 	if child!=target_node['id']:
-				# 		edges[(target_node['id'])]
 					to_add.append(newnode)
 					to_del.append(idx)
-			else:
-				single_align(node,nodes,edges,wsj_val)
+			# else:
+			# 	single_align(node,nodes,edges,wsj_val)
 	for idx in to_del:
 		del nodes[idx]
 	for newnode in to_add:
@@ -576,6 +553,7 @@ def join_two_nodes(node1_id,node2_id,decomp_node_id,nodes,edges,reverse=False):
 	edge_index1=index_list[edge1]
 	edge_index2=index_list[edge2]
 	decomp_node=nodes[decomp_node_id]
+	# head have smaller idx
 	if edge_index1<edge_index2:
 		headid=node1_id
 		depid=node2_id
@@ -647,7 +625,7 @@ def remove_node(node,nodes,edges):
 		if (parent['id'],node['id']) in edges:
 			del edges[(parent['id'],node['id'])]
 
-def double_implicit_reduction(sentence,wsj,collect={}):
+def double_implicit_reduction(sentence,wsj,stats_double):
 	# target: reduce all explicit target nodes' implicit parents with two children into an edge with label of node label
 	nodes=sentence['nodes']
 	anchor_dict={}
@@ -682,7 +660,9 @@ def double_implicit_reduction(sentence,wsj,collect={}):
 					if (((anchor_ch_0['to'] + 1 == anchor_ch_1['from']) and (anchor_ch_0['from'] == anchor_self['from']) and  (anchor_ch_1['to'] == anchor_self['to'])) or \
 							((anchor_ch_0['from'] == anchor_ch_1['to'] + 1) and (anchor_ch_1['from'] == anchor_self['from']) and  (anchor_ch_0['to'] == anchor_self['to']) )) and \
 							node['id'] not in sentence['tops']:
-
+						temp0 = edges[(node['id'], children[0])][0]
+						temp1 = edges[(node['id'], children[1])][0]
+						stats_double[(node['label'], temp0, temp1)] += 1
 						join_two_nodes(children[0],children[1],node['id'],nodes,edges)
 						to_del.append(idx)
 
@@ -1573,6 +1553,8 @@ if __name__ == '__main__':
 	reldict={}
 	reldict2={}
 	all_count={}
+	stats_single = collections.Counter()
+	stats_double = collections.Counter()
 	for sentence in alldicts:
 
 		# ---- Recording each word's starting index ----
@@ -1603,9 +1585,11 @@ if __name__ == '__main__':
 		# special_case_check(sentence,collect)
 		# we can now reduce these replacable nodes into a single node
 		# replacable_implicit_anchor_reduction(sentence,wsj)
+
 		# implicit nodes reduction
-		single_implicit_reduction(sentence,wsj,count=count)
-		double_implicit_reduction(sentence,wsj)
+
+		single_implicit_reduction(sentence,wsj,stats_single=stats_single)
+		double_implicit_reduction(sentence,wsj,stats_double=stats_double)
 		# clean_node_representation(sentence)
 		# anchor_node_extra_children_check(sentence,collect)
 		# remain_labels_reduction(sentence,wsj)
@@ -1617,9 +1601,10 @@ if __name__ == '__main__':
 		write_dict.append(res_dict)
 
 	pickle.dump(write_dict, open('eds_dict.pkl', 'wb'))
+	print(stats_single)
+	print(stats_double)
 
-
-	# import codecs
+# import codecs
 	# fout = open('mrp_eds.conllu', 'wb')
 # writer = codecs.getwriter('utf-8')(fout)
 # for data in write_dict:

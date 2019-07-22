@@ -28,9 +28,9 @@ if __name__ == '__main__':
             delete_by_id('word', node)
             delete_by_id('complex_word', node)
 
-
-    # with open('eds_small.json', 'w') as fout:
-    #     json.dump(eds_dict, fout)
+    #
+    # # with open('eds_small.json', 'w') as fout:
+    # #     json.dump(eds_dict, fout)
     with open('eds_small.pkl', 'wb') as fout:
         pickle.dump(eds_dict, fout)
     with open('eds_small.pkl', 'rb') as fin:
@@ -50,17 +50,17 @@ if __name__ == '__main__':
             temp = []
             _from = node['anchors'][0]['from']
             _to = node['anchors'][0]['to']
-            try:
-                _from_id = conllu_token_start.index(_from) + 1
-            except ValueError:
-                print('WRONG FROM ANCHOR!')
+            # try:
+            #     _from_id = conllu_token_start.index(_from) + 1
+            # except ValueError:
+            #     print('WRONG FROM ANCHOR!')
+            #
+            # try:
+            #     _to_id = conllu_token_end.index(_to) + 1
+            # except ValueError:
+            #     print('WRONG TO ANCHOR!')
 
-            try:
-                _to_id = conllu_token_end.index(_to) + 1
-            except ValueError:
-                print('WRONG TO ANCHOR!')
-
-            node['anchors'] = [_from_id, _to_id]
+            node['anchors'] = [_from, _to]
 
     with open('eds_change_anchor.pkl', 'wb') as fout:
         pickle.dump(eds_dict, fout)
