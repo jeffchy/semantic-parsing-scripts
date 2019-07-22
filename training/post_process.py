@@ -13,23 +13,26 @@ if __name__ == '__main__':
 
     wsj = conpanion_read()
 
-    # with open('eds_dict.pkl', 'rb') as fin:
-    #     eds_dict = pickle.load(fin)
-    # for i in tqdm(range(len(eds_dict))):
-    #     eds_dict[i]['nodes'] = [node for node_id, node in eds_dict[i]['nodes'].items()]
-    #     for node in eds_dict[i]['nodes']:
-    #         node['edges'] = '|'.join([':'.join([str(k) for k in i]) for i in node['edges']])
-    #         delete_by_id('complex_word', node)
-    #         delete_by_id('removed_info', node)
-    #         delete_by_id('parents', node)
-    #         delete_by_id('children', node)
-            # delete_by_id('complex_word', node)
+    with open('eds_dict.pkl', 'rb') as fin:
+        eds_dict = pickle.load(fin)
+    for i in tqdm(range(len(eds_dict))):
+        eds_dict[i]['nodes'] = [node for node_id, node in eds_dict[i]['nodes'].items()]
+        for node in eds_dict[i]['nodes']:
+            # node['edges'] = '|'.join([':'.join([str(k) for k in i]) for i in node['edges']])
+            delete_by_id('complex_word', node)
+            delete_by_id('removed_info', node)
+            delete_by_id('parents', node)
+            delete_by_id('children', node)
+            delete_by_id('edges', node)
+            delete_by_id('align_id', node)
+            delete_by_id('word', node)
+            delete_by_id('complex_word', node)
 
 
     # with open('eds_small.json', 'w') as fout:
     #     json.dump(eds_dict, fout)
-    # with open('eds_small.pkl', 'wb') as fout:
-    #     pickle.dump(eds_dict, fout)
+    with open('eds_small.pkl', 'wb') as fout:
+        pickle.dump(eds_dict, fout)
     with open('eds_small.pkl', 'rb') as fin:
         eds_dict = pickle.load(fin)
 

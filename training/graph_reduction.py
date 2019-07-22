@@ -1479,22 +1479,26 @@ def convert_to_dict(sentence):
 	id = sentence['id']
 	edges = sentence['edges']
 	tops = sentence['tops']
+	input = sentence['input']
 	res_dict = {}
 
 	for node_id, _ in nodes.items():
 		nodes[node_id]['edges'] = []
 
-	for (source, target), label in edges.items():
-		if len(label) != 1:
-			repeated_edges += 1
-		label = label[0]
-		nodes[target]['edges'].append((source, label))
-
-	for top in tops:
-		nodes[top]['edges'] = [(0, 'root')] + nodes[top]['edges']
+	# for (source, target), label in edges.items():
+	# 	if len(label) != 1:
+	# 		repeated_edges += 1
+	# 	label = label[0]
+	# 	nodes[target]['edges'].append((source, label))
+	#
+	# for top in tops:
+	# 	nodes[top]['edges'] = [(0, 'root')] + nodes[top]['edges']
 
 	res_dict['id'] = id
 	res_dict['nodes'] = nodes
+	res_dict['edges'] = edges
+	res_dict['tops'] = tops
+	res_dict['input'] = input
 
 	return res_dict
 
