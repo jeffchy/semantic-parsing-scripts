@@ -9,6 +9,12 @@ def check_equal(mrp_node, conllu_word, conllu_range):
     return (mrp_node['anchors'][0]['from'] == int(conllu_range[0]) and
             mrp_node['anchors'][0]['to'] == int(conllu_range[1]))
 
+def generalize_composition(composition, framework):
+    if framework == 'dm':
+        comp_list = composition.split('+')
+        comp_cap_list = [i.capitalize() for i in comp_list]
+    return comp_list + comp_cap_list
+
 def get_heads(node, edges):
     node_id = node['id']
     infos = []
@@ -40,10 +46,15 @@ if __name__ == '__main__':
     # conllus = sorted(conllus, key=lambda x: x[0])
     # pickle.dump(conllus, open('../processed_data/dm/sorted_conllu.pkl', 'wb'))
 
-    conllus = pickle.load(open('../processed_data/dm/sorted_conllu.pkl', 'rb'))
-    fout = open('../processed_data/psd/psd.conllu', 'w', encoding='utf-8')
+    framework = 'dm'
+    with open('../processed_data/{}/composition_dict.pkl'.format(framework), 'rb') as fin:
+        composition_dict = pickle.load(fin)
 
-    with open('../mrp/2019/training/psd/wsj.mrp', 'r', encoding='utf-8') as fin:
+    conllus = pickle.load(open('../processed_data/dm/sorted_conllu.pkl', 'rb'))
+    a = sum(list(composition_dict.values()))
+    fout = open('../processed_data/dm/dm.conllu', 'w', encoding='utf-8')
+
+    with open('../mrp/2019/training/dm/wsj.mrp', 'r', encoding='utf-8') as fin:
         mrps = read_mrp(fin)
 
     # check aligned
@@ -53,6 +64,7 @@ if __name__ == '__main__':
     count_same_word = 0
     count_same_lemma = 0
     count_node = 0
+    count = 0
 
     # start processing:
     for i in tqdm(range(len(conllus))):
@@ -71,12 +83,12 @@ if __name__ == '__main__':
         except KeyError:
             pass
 
+
         for j in range(1, len(conllu)):
             conllu_id, conllu_word, conllu_range, conllu_lemma = conllu[j][0], conllu[j][1], conllu[j][-1], conllu[j][2]
             mrp_edges = mrp['edges']
             frame = '_'
             pos = '_'
-
             for node in mrp['nodes']:
                 if check_equal(node, conllu_word, conllu_range):
 
@@ -88,7 +100,37 @@ if __name__ == '__main__':
                     count_node += 1
 
                     # change lemma to the node label
-                    new_conllu[j][2] = node['label']
+                    # conllu[j][2] = node['label']
+
+                    # c_ll = conllu[j - 2][2] if j > 2 else ''
+                    # c_l = conllu[j - 1][2] if j > 1 else ''
+                    c_m = conllu[j][2]
+                    # c_r = conllu[j + 1][2] if j < len(conllu) - 1 else ''
+                    # c_rr = conllu[j + 2][2] if j < len(conllu) - 2 else ''
+                    # list_c = [c_ll, c_l, c_m, c_r, c_rr]
+                    for composition, _ in composition_dict.items():
+                        same = True
+                        # if c_m in generalize_composition(composition, framework):
+                        splits = composition.split('+')
+                        if c_m in splits:
+                            idx = splits.index(c_m)
+                            for i in range(len(splits)):
+                                try:
+                                    if splits[i] != conllu[j-(idx-i)][2] and splits[i] != conllu[j-(idx-i)][2].capitalize():
+                                        same = False
+                                        break
+                                except IndexError:
+                                    same = False
+                                    break
+                        else:
+                            same = False
+
+                        if same:
+                            new_conllu[j][2] = composition
+                            count += 1
+                            break
+
+                    #         conllu[j][2] = composition
 
                     properties = node['properties']
                     if 'pos' in properties:
@@ -125,4 +167,5 @@ if __name__ == '__main__':
 
 
     print('all_nodes: {}, all node label same as word: {}, all node label same as lemma: {}'.format(count_node, count_same_word, count_same_lemma))
+    print(count)
     fout.close()

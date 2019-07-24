@@ -1,6 +1,7 @@
 from utils import *
 import re
-import Levenshtein
+# import Levenshtein
+import pickle
 
 def fill_in_lemma_and_compare(conllu_ner, conllu_new, conllu_old):
 
@@ -145,7 +146,8 @@ if __name__ == '__main__':
         conllu_dm_ner = read_txt(fin).split('<SENT_SPLIT>')
         conllu_dm_ner = [i for i in conllu_dm_ner if i.strip()]
 
+
     fill_in_lemma_and_compare(conllu_dm_ner, conllu_dm_new, None)
-    with open('../processed_data/dm/train.dm.ner+lemma.conllu', 'w', encoding='utf-8') as fout:
+    with open('../processed_data/dm/train.dm.ner+preporclemma.conllu', 'w', encoding='utf-8') as fout:
         for conllu in conllu_dm_new:
             write_to_conllu(conllu, fout)

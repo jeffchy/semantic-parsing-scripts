@@ -65,6 +65,9 @@ def recover_eds_to_mrp(eds, conllu):
     new_nodes = []
     new_edges = []
     for _node in nodes_eds:
+        if 'type' in _node:
+            del _node['type']
+
         if 'values' in _node:
             node_values  = _node['values']
             # recover entity list
@@ -76,6 +79,7 @@ def recover_eds_to_mrp(eds, conllu):
         # single recover
         if 'attributes' in _node:
             attrs = _node['attributes']
+            assert len(attrs) == 1
             for attr in attrs:
                 assert attr in single_list
                 # pop id from queue list
@@ -147,7 +151,7 @@ def recover_eds_to_mrp(eds, conllu):
 
 if __name__ == '__main__':
 
-    with open('eds_change_anchor.pkl', 'rb') as fin:
+    with open('eds_anchor_span.pkl', 'rb') as fin:
         eds_all = pickle.load(fin)
 
     count0 = 0

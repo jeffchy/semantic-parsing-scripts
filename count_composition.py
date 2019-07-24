@@ -50,15 +50,15 @@ def correct_mrp_by_composition(mrps, compositions):
 if __name__ == '__main__':
     with open('../mrp/2019/training/dm/wsj.mrp', 'r', encoding='utf-8') as fin:
         mrps = read_mrp(fin)
-    # res_dict = count_composition(mrps)
-    # with open('../processed_data/dm/composition_dict.pkl', 'wb') as fout:
-    #     pickle.dump(res_dict, fout)
-    with open('../processed_data/dm/composition_dict.pkl', 'rb') as fin:
-        res_dict = pickle.load(fin)
-    with open('../processed_data/dm/dev.en.dm.conllu.sdp.mrp', 'r', encoding='utf-8') as fin:
-        mrps_parse = read_mrp(fin)
-
-    new_mrps = correct_mrp_by_composition(mrps_parse, res_dict)
-
-    with open('../processed_data/dm/dev.en.dm.conllu.sdp.composition_correction.mrp', 'w', encoding='utf-8') as fout:
-        write_mrp(new_mrps, fout)
+    res_dict = count_composition(mrps)
+    with open('../processed_data/dm/composition_dict.pkl', 'wb') as fout:
+        pickle.dump(res_dict, fout)
+    # with open('../processed_data/dm/composition_dict.pkl', 'rb') as fin:
+    #     res_dict = pickle.load(fin)
+    # with open('../processed_data/dm/dev.en.dm.conllu.sdp.mrp', 'r', encoding='utf-8') as fin:
+    #     mrps_parse = read_mrp(fin)
+    #
+    # new_mrps = correct_mrp_by_composition(mrps_parse, res_dict)
+    #
+    # with open('../processed_data/dm/dev.en.dm.conllu.sdp.composition_correction.mrp', 'w', encoding='utf-8') as fout:
+    #     write_mrp(new_mrps, fout)
